@@ -70,6 +70,35 @@ int degres;
 
 
 
+// FONCTION MARCHE/ARRET DU FREIN A MAIN //
+
+void frein (){
+
+  valFrein = digitalRead(SW_pin);
+    degres = servFrein.read();
+  
+    switch(valFrein){
+      case HIGH : servFrein.write(degres); 
+        break;
+      
+      case LOW : 
+      
+        if (degres <=80){
+          servFrein.write(180);
+          }
+        else{
+          servFrein.write(0);          
+          }
+        break;
+        }
+  
+}
+
+
+
+//*************************//
+
+
 
 // FONCTION DE TRANSMITION D'INFORMATION SELON LES TOUCHES DE LA TELECOMMANDE IR //
 
@@ -102,11 +131,11 @@ void translateIR(){ // takes action based on IR code received
 
 
                  
-  case 0xFF02FD: Serial.println("PAUSE");    break;
+  case 0xFF02FD: Serial.println("PAUSE");  
+                 servDir.write(90);
 
-
-
-  
+                 break;
+                 
   case 0xFFC23D: Serial.println("FAST FORWARD");  
                  servDir.write(180);
   
@@ -121,14 +150,25 @@ void translateIR(){ // takes action based on IR code received
   
                  break;
 
+  case 0xFFE21D: Serial.println("FUNC/STOP");
+                 analogWrite(ENABLE,0); //enable on
+                 digitalWrite(DIRA,LOW); //one way
+                 digitalWrite(DIRB,HIGH);
+                 
+                 break;
                  
   
-  case 0xFFFFFFFF: Serial.println("Reapet"); 
+  case 0xFFFFFFFF: Serial.println("Repeat"); 
   
                    break;  
+  case 0xFF9867: Serial.println("EQ");   
 
+                 frein();
+  
+                 break;
+  
   default: 
-    Serial.println(" Aucune action ");
+    Serial.println("Touche inconnue ");
 
   }// End Case
 
@@ -249,31 +289,17 @@ switch (utilisation) { // Choix du mode d'utilisation : soit une utlisation avec
 
     // CONTROLE DU SERVOMOTEUR FREIN A MAIN //
 
-    valFrein = digitalRead(SW_pin);
-    degres = servFrein.read();
-  
-    switch(valFrein){
-      case HIGH : servFrein.write(degres); 
-        break;
-      
-      case LOW : 
-      
-        if (degres <=80){
-          servFrein.write(180);
-          }
-        else{
-          servFrein.write(0);          
-          }
-        break;
-        }
+    frein();
+
+    //*********************//
     Serial.println(valUtilisation);
+    
     break; //Fin du cas : contrôle joystick
 
 
 
 
     case false : 
-      delay (50);
       if (irrecv.decode(&results)){ // have we received an IR signal?
         translateIR(); 
         irrecv.resume(); // receive the next value
@@ -281,6 +307,9 @@ switch (utilisation) { // Choix du mode d'utilisation : soit une utlisation avec
     break;
     }
 }
+
+
+
 
 
 
