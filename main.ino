@@ -73,11 +73,14 @@ int degres;
 
 // FONCTION DE TRANSMITION D'INFORMATION SELON LES TOUCHES DE LA TELECOMMANDE IR //
 
-void translateIR() // takes action based on IR code received
+void translateIR(){ // takes action based on IR code received
+  
 
-// describing Remote IR codes 
 
-{
+
+
+// FIN DE LA FONCTION TRANSMITION IR //
+
 
   switch(results.value)
 
@@ -93,7 +96,7 @@ void translateIR() // takes action based on IR code received
 
                  
   case 0xFF22DD: Serial.println("FAST BACK");   
-                 myservo.write(0);
+                 servDir.write(0);
   
                  break;
 
@@ -105,7 +108,7 @@ void translateIR() // takes action based on IR code received
 
   
   case 0xFFC23D: Serial.println("FAST FORWARD");  
-                 myservo.write(180);
+                 servDir.write(180);
   
                  break;
 
@@ -120,10 +123,7 @@ void translateIR() // takes action based on IR code received
 
                  
   
-  case 0xFFFFFFFF: Serial.println(" REPEAT");
-                   analogWrite(ENABLE,200); //enable on
-                   digitalWrite(DIRA,HIGH); //one way
-                   digitalWrite(DIRB,LOW);
+  case 0xFFFFFFFF: Serial.println("Reapet"); 
   
                    break;  
 
@@ -132,12 +132,8 @@ void translateIR() // takes action based on IR code received
 
   }// End Case
 
+  delay(500);
 }
-
-// FIN DE LA FONCTION TRANSMITION IR //
-
-
-
 
 
 //####################################################################################################################################//
@@ -149,11 +145,14 @@ void translateIR() // takes action based on IR code received
 
 void setup() {
 
+  Serial.begin(9600); // Vitesse de la carte à 9600
+
+
   irrecv.enableIRIn(); // Démarrer le capteur IR
 
   // INIT DES 2 SERVOMOTEURS //
   servDir.attach(9);
-  servDIR.write(90);
+  servDir.write(90);
 
   servFrein.attach(13);
   servFrein.write(0);
@@ -171,7 +170,7 @@ void setup() {
   //***********************//
 
   
-  Serial.begin(9600); // Vitesse de la carte à 9600
+  
   
   }
 
@@ -244,35 +243,37 @@ switch (utilisation) { // Choix du mode d'utilisation : soit une utlisation avec
 
     valTurn = analogRead(Y_pin);
     valTurn = map (valTurn, 0, 1023, 0, 179);
-    myservo.write(valTurn);
+    servDir.write(valTurn);
 
     //*********************//
 
     // CONTROLE DU SERVOMOTEUR FREIN A MAIN //
 
     valFrein = digitalRead(SW_pin);
-    degres = myservo2.read();
+    degres = servFrein.read();
   
     switch(valFrein){
-      case HIGH : myservo2.write(degres); 
+      case HIGH : servFrein.write(degres); 
         break;
       
       case LOW : 
       
         if (degres <=80){
-          myservo2.write(180);
+          servFrein.write(180);
           }
         else{
-          myservo2.write(0);          
+          servFrein.write(0);          
           }
         break;
         }
+    Serial.println(valUtilisation);
     break; //Fin du cas : contrôle joystick
 
 
 
 
     case false : 
+      delay (50);
       if (irrecv.decode(&results)){ // have we received an IR signal?
         translateIR(); 
         irrecv.resume(); // receive the next value
@@ -280,4 +281,18 @@ switch (utilisation) { // Choix du mode d'utilisation : soit une utlisation avec
     break;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
